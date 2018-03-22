@@ -60,48 +60,5 @@ public interface TextRegistry {
 	 * @return the supplier or <code>null</code>
 	 * @since 2.1
 	 */
-	default public java.util.function.Supplier<String> getSupplierByKey(String key, Object... values) {
-		// FIXME Make none default in 3.0
-		if (values.length == 0) {
-			try {
-				Method m = getClass().getMethod(key);
-				return new Supplier<String>() {
-
-					@Override
-					public String get() {
-						try {
-							return (String) m.invoke(this);
-						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				};
-			} catch (NoSuchMethodException | SecurityException e) {
-				LoggerCreator.createLogger(getClass()).error("No translation for '" + key + "' is found"); //$NON-NLS-1$//$NON-NLS-2$
-			}
-		} else {
-			try {
-				Optional<Supplier<String>> rv = Stream.of(getClass().getMethods())
-						.filter(m -> (key + "_supplier").equals(m.getName())) //$NON-NLS-1$
-						.findFirst().<Supplier<String>>map(m -> new Supplier<String>() {
-
-							@Override
-							public String get() {
-								try {
-									return (String) m.invoke(this, values);
-								} catch (IllegalAccessException | IllegalArgumentException
-										| InvocationTargetException e) {
-									throw new RuntimeException(e);
-								}
-							}
-						});
-				if (rv.isPresent()) {
-					return rv.get();
-				}
-			} catch (SecurityException e) {
-				LoggerCreator.createLogger(getClass()).error("No translation for '" + key + "' is found"); //$NON-NLS-1$//$NON-NLS-2$
-			}
-		}
-		return null;
-	}
+	java.util.function.Supplier<String> getSupplierByKey(String key, Object... values);
 }
